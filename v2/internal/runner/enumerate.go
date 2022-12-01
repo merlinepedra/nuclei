@@ -134,6 +134,26 @@ func (r *Runner) runCloudEnumeration(store *loader.Store, nostore bool) (*atomic
 	return results, err
 }
 
+func (r *Runner) setWebhook(url string) error {
+	err := r.cloudClient.SetWebhook(url)
+	if err != nil {
+		gologger.Info().Msgf("Error in setting the webhook %s.", url)
+	} else {
+		gologger.Info().Msgf("Webhook set %s.", url)
+	}
+	return err
+}
+
+func (r *Runner) deleteWebhook() error {
+	err := r.cloudClient.DeleteWebhook()
+	if err != nil {
+		gologger.Info().Msgf("Error in deleting the webhook.")
+	} else {
+		gologger.Info().Msgf("Webhook deleted.")
+	}
+	return err
+}
+
 func getTemplateRelativePath(templatePath string) string {
 	splitted := strings.SplitN(templatePath, "nuclei-templates", 2)
 	if len(splitted) < 2 {

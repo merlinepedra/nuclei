@@ -181,3 +181,65 @@ func (c *Client) DeleteScan(id string) (DeleteScanResults, error) {
 
 	return deletescan, nil
 }
+
+func (c *Client) SetWebhook(url string) error {
+
+	var buf bytes.Buffer
+	st := struct {
+		URL string `json:"url"`
+	}{}
+
+	st.URL = url
+
+	if err := jsoniter.NewEncoder(&buf).Encode(st); err != nil {
+		return errors.Wrap(err, "could not json encode scan request")
+	}
+
+	httpReq, err := retryablehttp.NewRequest(http.MethodPost, fmt.Sprintf("%s/webhook", c.baseURL), bytes.NewReader(buf.Bytes()))
+	if err != nil {
+		return errors.Wrap(err, "could not make request")
+	}
+	httpReq.Header.Set("X-API-Key", c.apiKey)
+	httpReq.Header.Set("Content-Type", "application/json")
+
+	resp, err := c.httpclient.Do(httpReq)
+	if err != nil {
+		return errors.Wrap(err, "could not make request")
+	}
+	if err != nil {
+		return errors.Wrap(err, "could not do get result request")
+	}
+	if resp.StatusCode != 200 {
+		data, _ := io.ReadAll(resp.Body)
+		resp.Body.Close()
+		return errors.Errorf("could not do request %d: %s", resp.StatusCode, string(data))
+	}
+	resp.Body.Close()
+
+	return nil
+}
+
+func (c *Client) DeleteWebhook() error {
+	fmt.Println(fmt.Sprintf("%s/webhook", c.baseURL))
+	httpReq, err := retryablehttp.NewRequest(http.MethodDelete, fmt.Sprintf("%s/webhook", c.baseURL), nil)
+	if err != nil {
+		return errors.Wrap(err, "could not make request")
+	}
+	httpReq.Header.Set("X-API-Key", c.apiKey)
+
+	resp, err := c.httpclient.Do(httpReq)
+	if err != nil {
+		return errors.Wrap(err, "could not make request")
+	}
+	if err != nil {
+		return errors.Wrap(err, "could not do get result request")
+	}
+	if resp.StatusCode != 200 {
+		data, _ := io.ReadAll(resp.Body)
+		resp.Body.Close()
+		return errors.Errorf("could not do request %d: %s", resp.StatusCode, string(data))
+	}
+	resp.Body.Close()
+
+	return nil
+}

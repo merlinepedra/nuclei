@@ -447,6 +447,10 @@ func (r *Runner) RunEnumeration() error {
 			err = r.deleteScan(r.options.DeleteScan)
 		} else if r.options.ScanOutput != "" {
 			err = r.getResults(r.options.ScanOutput)
+		} else if r.options.Webhook != "" {
+			err = r.setWebhook(r.options.Webhook)
+		} else if r.options.WebhookDelete {
+			err = r.deleteWebhook()
 		} else {
 			gologger.Info().Msgf("Running scan on cloud with URL %s", r.options.CloudURL)
 			results, err = r.runCloudEnumeration(store, r.options.NoStore)

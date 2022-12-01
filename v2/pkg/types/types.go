@@ -103,6 +103,10 @@ type Options struct {
 	DeleteScan string
 	// Get issues for a scan
 	ScanOutput string
+	// Set the webhook for the scan
+	Webhook string
+	// Delete the webhook for the scan
+	WebhookDelete bool
 	// ResolversFile is a file containing resolvers for nuclei.
 	ResolversFile string
 	// StatsInterval is the number of seconds to display stats after
