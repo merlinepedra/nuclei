@@ -21,9 +21,10 @@ type AddScanRequest struct {
 	// CloudTemplates is a list of cloud templates for the scan
 	CloudTemplates []string `json:"cloud_templates,omitempty"`
 	// Filtering contains optional filtering options for scan additions
-	Filtering *AddScanRequestConfiguration `json:"filtering"`
+	Filtering *AddScanRequestConfiguration `json:"filtering,omitempty"`
 
-	IsTemporary bool `json:"is_temporary"`
+	IsDebug     bool `json:"is_debug,omitempty"`
+	IsTemporary bool `json:"is_temporary,omitempty"`
 }
 
 // AddScanRequestConfiguration contains filtering options for scan addition

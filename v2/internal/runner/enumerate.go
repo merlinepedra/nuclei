@@ -73,6 +73,7 @@ func (r *Runner) runCloudEnumeration(store *loader.Store, cloudTemplates, cloudT
 		CloudTemplates:   cloudTemplates,
 		PrivateTemplates: privateTemplates,
 		IsTemporary:      nostore,
+		IsDebug:          r.options.Verbose,
 		Filtering:        getCloudFilteringFromOptions(r.options),
 	})
 	if err != nil {
