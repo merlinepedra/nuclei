@@ -56,6 +56,7 @@ func New(baseURL, apiKey string) *Client {
 	if baseAppURL == "" {
 		baseAppURL = defaultBaseURL
 	}
+	baseAppURL = strings.TrimSuffix(baseAppURL, "/")
 	return &Client{httpclient: client, baseURL: baseAppURL, apiKey: apiKey}
 }
 
