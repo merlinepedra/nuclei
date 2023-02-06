@@ -76,6 +76,8 @@ type ExecuterOptions struct {
 	InputHelper *input.Helper
 
 	Operators []*operators.Operators // only used by offlinehttp module
+	// DoNotCache disables caching of objects for executer options
+	DoNotCache bool
 
 	Colorizer      aurora.Aurora
 	WorkflowLoader model.WorkflowLoader

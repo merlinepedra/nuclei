@@ -47,6 +47,7 @@ type Client struct {
 
 	dataMutex *sync.RWMutex
 
+	closed   *atomic.Bool
 	hostname string
 
 	firstTimeGroup sync.Once
@@ -124,6 +125,7 @@ func New(options *Options) (*Client, error) {
 		interactshURLs:   interactshURLCache,
 		options:          options,
 		requests:         cache,
+		closed:           &atomic.Bool{},
 		pollDuration:     options.PollDuration,
 		cooldownDuration: options.CooldownPeriod,
 		dataMutex:        &sync.RWMutex{},
@@ -171,6 +173,9 @@ func (c *Client) firstTimeInitializeClient() error {
 	c.dataMutex.Unlock()
 
 	interactsh.StartPolling(c.pollDuration, func(interaction *server.Interaction) {
+		if c.closed.Load() {
+			return
+		}
 		item := c.requests.Get(interaction.UniqueID)
 
 		if item == nil {
@@ -268,6 +273,7 @@ func (c *Client) Close() bool {
 			cc.Stop()
 		}
 	}
+	_ = c.closed.CompareAndSwap(false, true)
 	closeCache(c.requests)
 	closeCache(c.interactions)
 	closeCache(c.matchedTemplates)
@@ -282,6 +288,9 @@ func (c *Client) Close() bool {
 // It accepts data to replace as well as the URL to replace placeholders
 // with generated uniquely for each request.
 func (c *Client) ReplaceMarkers(data string, interactshURLs []string) (string, []string) {
+	if c.closed.Load() {
+		return "", nil
+	}
 	for interactshURLMarkerRegex.Match([]byte(data)) {
 		url := c.URL()
 		interactshURLs = append(interactshURLs, url)
@@ -300,6 +309,9 @@ func (c *Client) ReplaceMarkers(data string, interactshURLs []string) (string, [
 
 // MakePlaceholders does placeholders for interact URLs and other data to a map
 func (c *Client) MakePlaceholders(urls []string, data map[string]interface{}) {
+	if c.closed.Load() {
+		return
+	}
 	data["interactsh-server"] = c.getInteractServerHostname()
 	for _, url := range urls {
 		if interactshURLMarker := c.interactshURLs.Get(url); interactshURLMarker != nil {
@@ -338,6 +350,9 @@ type RequestData struct {
 
 // RequestEvent is the event for a network request sent by nuclei.
 func (c *Client) RequestEvent(interactshURLs []string, data *RequestData) {
+	if c.closed.Load() {
+		return
+	}
 	for _, interactshURL := range interactshURLs {
 		id := strings.TrimRight(strings.TrimSuffix(interactshURL, c.hostname), ".")
 
